@@ -1,0 +1,26 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x000000010e79a432, pid=34794, tid=15875
+#
+# JRE version: Java(TM) SE Runtime Environment (12.0.1+12) (build 12.0.1+12)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (12.0.1+12, mixed mode, sharing, tiered, compressed oops, g1 gc, bsd-amd64)
+# Problematic frame:
+# C  [libjimage.dylib+0x2432]  _ZNK15ImageFileReader19find_location_indexEPKcPy+0x2c
+#
+# No core dump will be written. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:57652 -javaagent:/Applications/Eclipse.app/Contents/Eclipse/configuration/org.eclipse.osgi/402/0/.cp/lib/javaagent-shaded.jar -Dfile.encoding=UTF-8 portfolioManagementSystem.App
+
+Host: MacBookPro14,1 x86_64 2300 MHz, 4 cores, 8G, Darwin 18.7.0
+Time: Tue Aug 27 21:38:54 2019 EDT elapsed time: 4932 seconds (0d 1h 22m 12s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00007fe2bc835800):  
