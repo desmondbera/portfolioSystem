@@ -10,7 +10,9 @@ import java.util.Scanner;
 public class App {
 
 	private static float cash = 0;
+	//TODO: convert from INTEGER to float
 	private static HashMap<String, Integer> userHoldings = new HashMap<String, Integer>();
+	private static HashMap<String, Float> userDailyPortfolioValues = new HashMap<String, Float>();
 	private static int dayCounter = 1;
 
 	public enum StockNames {
@@ -38,7 +40,10 @@ public class App {
 
 			System.out.println("Enter 2 to go to tomorrow: ");
 			
-			System.out.println("Enter 3 to exit program.");
+			System.out.println("Enter 3 to caclulate returns: ");
+			
+			System.out.println("Enter 4 to exit program.");
+			
 			
 			String userChoice = sc.next();
 			System.out.println("You chose option: " + userChoice);
@@ -65,7 +70,7 @@ public class App {
 				System.out.println("Enter the name of the stock you want to " + userAction + ": ");
 	
 				for (StockNames s : StockNames.values()) {
-					System.out.println(s);
+					System.out.println("- " + s);
 				}
 	
 				// 4. Confirm the price of X-STOCK AND the amount of shares to buy:
@@ -86,8 +91,6 @@ public class App {
 				// 4.2 Check how much the stock is trading current day
 	
 				System.out.println("You picked " + userPickedStock + ".");
-//				System.out.println("Currentmonth here is: " + currentMonth);
-//				System.out.println("Current day herre is: " + currentDay);
 				
 				String stockPrice = currStockPickedPrice(userPickedStock, currentMonth, currentDay);
 				System.out.println("It's currently trading at " + stockPrice + " per share");
@@ -184,7 +187,39 @@ public class App {
 				System.out.println("Inside 2nd case!");
 				dayCounter++;
 				break;
-			case ("3"):
+			case("3"):
+				System.out.println("Calculations begin!");
+				
+				//1. we need ask the user what day to start with AND what day to end with for calculation
+				System.out.println("Enter start month for calculations (Ex: 04): ");
+				String startMonth = sc.next();
+				System.out.println("Enter start day for calculations (Ex: 12): ");
+				String startDay = sc.next();
+				
+				//1.1 end dates below
+				System.out.println("Enter end month for calculations (Ex: 05): ");
+				String endMonth = sc.next();
+				System.out.println("Enter end day for calculations (Ex: 22): ");
+				String endDay = sc.next();
+				
+				//1.2 we also have to take into account that the user may input a date in the FUTURE
+				// that would automatically mean it would not have any numbers. The opposite is possible tho. 
+				// The user can be in the middle of May and access all the way back to the first input
+				
+				
+				
+				//1.3 we need to make sure the dates are valid in our CSV
+				boolean startDateResult = isDateInCSV(startMonth, startDay);
+				boolean endDateResult = isDateInCSV(endMonth, endDay);
+				System.out.println("Our startDateResult is: " + startDateResult);
+				System.out.println("Our endDateResult is: " + endDateResult);
+				//2. then given those days we calculate the percent change in PORTFOLIO VALUE
+				
+				//3. in order to calculate across multiple days we need to keep track of the portfolio value for each day
+				//	Perhaps as a HashMap. Key = date, value = daily portofolio value 
+			
+				break;
+			case ("4"):
 				System.out.println("BYE BYE!");
 				exitFlag = true;
 				break;
@@ -196,6 +231,41 @@ public class App {
 		}
 		
 			System.out.println("Outside of the BIG SWITCH CASE");
+			System.out.println("Userholdings: ");
+	}
+
+	private static boolean isDateInCSV(String month, String day) {
+		boolean result = false;
+		
+		//1. put month and day together as one string
+		String userMonthDayString = month + day;
+		System.out.println("Our monthDayString is: " + userMonthDayString);
+		//2. loop thru the csv file - since it is ordered we might want to do a binary search to make it faster + efficient with a bigger csv file
+		String csvFile = "InterviewCodingPrices.csv";
+		String line = "";
+		String splitBy = ",";
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+
+			System.out.println("Inside try!");
+			while ((line = br.readLine()) != null) {
+				String[] holding = line.split(splitBy);
+//				System.out.println("Holding Date: " + holding[0]);
+				String currentDate = holding[0];
+				String currentMonthDateStr = currentDate.substring(4);
+				if(currentMonthDateStr.contentEquals(userMonthDayString)) {
+					System.out.println("we found one!");
+					result = true;
+				}
+
+			}
+
+		} catch (IOException e) {
+			System.out.println("Inside catch!");
+			e.printStackTrace();
+		}
+		
+		return result;
 	}
 
 	private static String getDayWithCounter(int dayCounter2) {
@@ -245,18 +315,18 @@ public class App {
 	}
 
 	private static void showUserHoldings(String currentMonth, String currentDay) {
-		System.out.println("==================");
-		System.out.println("Your holdings are listed below: ");
+		System.out.println("======================================================");
+		System.out.println("::::::::::HOLDINGS::::::::::");
 		String portfolioValue = getUserPortfolioValue(currentMonth, currentDay);
-		System.out.println("Portfolio value: " + portfolioValue);
+		System.out.println("- PORTFOLIO VALUE: $" + portfolioValue + " - ");
 		
-		userHoldings.forEach((k, v) -> System.out.println("Stock name: " + k 
-				+ ". | # of shares: " + v 
-				+ " | Holding Value: " + getHoldingValueOfStock(k, v, currentMonth, currentDay) 
-				+ " | Holding Weight: " + getHoldingWeightOfStock(k, v, currentMonth, currentDay, portfolioValue) 
-				+ " | Cash Weight: " + getCashWeight(currentMonth, currentDay)));
+		userHoldings.forEach((k, v) -> System.out.println("STOCK NAME: " + k 
+				+ ". || # OF SHARES: " + v 
+				+ " || HOLDING VALUE: " + getHoldingValueOfStock(k, v, currentMonth, currentDay) 
+				+ " || HOLDING WEIGHT: " + getHoldingWeightOfStock(k, v, currentMonth, currentDay, portfolioValue) + "%" 
+				+ " || CASH WEIGHT: " + getCashWeight(currentMonth, currentDay)));
 		
-		System.out.println("==================");
+		System.out.println("======================================================");
 	}
 
 	
@@ -274,7 +344,7 @@ public class App {
 
 	private static String getHoldingWeightOfStock(String k, Integer v, String currentMonth, String currentDay, String portfolioValue) {
 		// Holding weight = holding value / portfolio value
-		float holdingWeight = Float.parseFloat(getHoldingValueOfStock(k, v, currentMonth, currentDay)) / Float.parseFloat(portfolioValue) ;
+		float holdingWeight = 100 * Float.parseFloat(getHoldingValueOfStock(k, v, currentMonth, currentDay)) / Float.parseFloat(portfolioValue) ;
 		return Float.toString(holdingWeight);
 	}
 
@@ -304,7 +374,6 @@ public class App {
 		// 2. if we are buying, we need to make sure we have enough cash.
 		// If not enough cash, then we return false and don't update holdings
 		if (userAction.equalsIgnoreCase("buy")) {
-//			System.out.println("Inside buyingggggggg");
 			float stockPriceFloat = Float.parseFloat(stockPrice);
 			float totalCostToBuy = stockPriceFloat * stockCount;
 //			System.out.println("Our stockPriceFloat is: " + stockPriceFloat);
@@ -323,14 +392,12 @@ public class App {
 				} else {
 					userHoldings.put(userPickedStock, stockCount);
 				}
-//				userHoldings.put(userPickedStock, userHoldings.getOrDefault(userPickedStock, stockCount) + 1);
 				result = true;
 			}
 		}
 
 		// 3. if we are selling then we perform the calculations to get the current
-		// value of
-		// the stock * the count. Then we update our cash variable.
+		// value of the stock * the count. Then we update our cash variable.
 		if (userAction.equalsIgnoreCase("sell")) {
 //			System.out.println("Inside sellingggggg");
 //			// **** TEST *****
