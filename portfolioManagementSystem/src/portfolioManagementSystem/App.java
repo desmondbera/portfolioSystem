@@ -20,23 +20,30 @@ public class App {
 	public static void main(String[] args) {
 //		showCsvFile();
 		Scanner sc = new Scanner(System.in);
-
-		// 0.9 Get the first date on the CSV file:
-		String currentMonth = getMonthWithCounter(dayCounter);
-		String currentDay = getDayWithCounter(dayCounter);
-
-		// 1. Ask user what option they want
-		System.out.println("Enter 1 to deposit cash into your portfolio: ");
 		
-		//TODO: does not work properly yet.
-		System.out.println("Enter 2 to go to the next day: ");
-
-		String userChoice = sc.next();
-		System.out.println("You chose option: " + userChoice);
-
-		while(dayCounter < 25) {
+		String currentMonth;
+		String currentDay;
+		
+		boolean exitFlag = false;
+		while(dayCounter < 25 && !exitFlag) {
 			
-			System.out.println("***Welcome, today is " + currentMonth + "/" + currentDay + "****");
+			currentMonth = getMonthWithCounter(dayCounter);
+			currentDay = getDayWithCounter(dayCounter);
+			
+			System.out.println("|| WELCOME, TODAY'S DATE IS: " + currentMonth + "/" + currentDay + " ||");
+
+			
+			// 1. Ask user what option they want
+			System.out.println("Enter 1 to start buying / selling stocks: ");
+
+			System.out.println("Enter 2 to go to tomorrow: ");
+			
+			System.out.println("Enter 3 to exit program.");
+			
+			String userChoice = sc.next();
+			System.out.println("You chose option: " + userChoice);
+			
+			
 			switch (userChoice) {
 
 			case ("1"):
@@ -177,12 +184,17 @@ public class App {
 				System.out.println("Inside 2nd case!");
 				dayCounter++;
 				break;
+			case ("3"):
+				System.out.println("BYE BYE!");
+				exitFlag = true;
+				break;
 			default:
-				System.out.println("Inside break");
+				System.out.println("That is not a valid input.");
 				break;
 			}
 			
 		}
+		
 			System.out.println("Outside of the BIG SWITCH CASE");
 	}
 
