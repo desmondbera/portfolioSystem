@@ -61,7 +61,6 @@ public class App {
 					initialDepositFlag = true;
 				}
 				
-	
 				// 2. Ask user whether they want to buy OR sell
 				
 				System.out.println("Enter 'buy' to buy or 'sell' to sell: ");
@@ -280,6 +279,14 @@ public class App {
 					endDateInCSV = isDateInCSV(endMonth, endDay);
 				}
 				
+				System.out.println("-------------------------");
+				System.out.println("----PORTFOLIO RETURNS----");
+				System.out.println("FROM: " + startMonth + "/" + startDay);
+				System.out.println("TO: " + endMonth + "/" + endDay);
+				System.out.println("Percentage (%): " + getPortfolioReturnsOverPeriod(startMonth, startDay, endMonth, endDay));
+				
+				
+				System.out.println("-------------------------");
 				
 				//3. then given those days we calculate the percent change in PORTFOLIO VALUE
 				//4. in order to calculate across multiple days we need to keep track of the portfolio value for each day
@@ -298,8 +305,41 @@ public class App {
 			
 		}
 		
-			System.out.println("Outside of the BIG SWITCH CASE");
-			System.out.println("Userholdings: " + userHoldings);
+//			System.out.println("Outside of the BIG SWITCH CASE");
+//			System.out.println("Userholdings: " + userHoldings);
+	}
+
+	private static String getPortfolioReturnsOverPeriod(String startMonth, String startDay, String endMonth, String endDay) {
+		
+		//1. we need to get the difference between END DATE VALUE and START DATE VALUE
+		float endDateDailyValue = getUserDailyPortfolioValueByMonthAndDay(endMonth, endDay);
+		float startDateDailyValue = getUserDailyPortfolioValueByMonthAndDay(startMonth, startDay);
+		
+		//2. divide that difference between by START DATE VALUE
+		float diff = endDateDailyValue - startDateDailyValue;
+//		System.out.println("#### -> Our difference is: " + diff);
+		
+		float ans = diff / startDateDailyValue;
+//		System.out.println("Our answer is: " + ans);
+		
+		float ansToPercent = ans * 100;
+//		System.out.println("Our ansToPercent is: " + ansToPercent);
+		//3. multiply previous answer by 100 to get percentage
+		return Float.toString(ansToPercent);
+		
+	}
+
+	private static float getUserDailyPortfolioValueByMonthAndDay(String month, String day) {
+		float result = 0;
+		String dateString = month + day;
+		
+		for(Map.Entry<String, Float> entry: userDailyPortfolioValues.entrySet()) {
+			if(entry.getKey().contentEquals(dateString)) {
+				result = entry.getValue();
+			}
+		}
+		
+		return result;
 	}
 
 	private static void updateUserDailyPortfolioValues(String currentMonth, String currentDay) {
@@ -324,12 +364,12 @@ public class App {
 		int startDayToInt = Integer.parseInt(startDay);
 		
 		if(endMonthToInt > startMonthToInt) {
-			System.out.println("End month is after Start month");
+//			System.out.println("End month is after Start month");
 			result = true;
 		}
 		
 		if(endMonthToInt == startMonthToInt) {
-			System.out.println("Same month. Checking days now: ");
+//			System.out.println("Same month. Checking days now: ");
 			if(endDayToInt > startDayToInt) {
 				result = true;
 			}
@@ -405,7 +445,7 @@ public class App {
 //				System.out.println("currentMonthDateStr is: " + currentMonthDateStr);
 //				System.out.println("userMonthDayString is: " + userMonthDayString);
 				if(currentMonthDateStr.equalsIgnoreCase(userMonthDayString)) {
-					System.out.println("we found one!");
+//					System.out.println("we found one!");
 					result = true;
 					break;
 				}
