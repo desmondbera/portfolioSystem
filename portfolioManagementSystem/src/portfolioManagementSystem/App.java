@@ -193,25 +193,23 @@ public class App {
 				dayCounter++;
 				break;
 			case("3"):
-				System.out.println("Calculations begin!");
+				System.out.println("Calculating portfolio returns...");
 				System.out.println("Checking what our userHoldings is in CALCULATIONS: " + userHoldings);
 				System.out.println("Checking what our userDailyPortfolioValues is in CALCS: " + userDailyPortfolioValues);
 				
 				//1. we need to ask the user what day to start with AND what day to end with for calculation
 				System.out.println("Enter start month for calculations (Ex: 04): ");
 				String startMonth = sc.next();
-				System.out.println("Enter start day for calculations (Ex: 12): ");
+				System.out.println("Enter start day for calculations (Ex: 02): ");
 				String startDay = sc.next();
 				
-				//1.01 we also need to check WHEN we are calling this report
-				
-				//Is user Input for startMonth + startDay BEFORE our current month + current day?
+				//1.1 Is user Input for startMonth + startDay BEFORE our current month + current day?
 				boolean startDateBeforeCurr = isStartDateBeforeCurrent(startMonth, startDay, currentMonth, currentDay);
 				
-				//Is there a KEY that matches our start date in userDailyPortfolioValues
-				boolean startDateInUserDailyMap = isStartDateInUserDailyPortfolio(startMonth, startDay);
+				//1.2 Is there a KEY that matches our start date in userDailyPortfolioValues?
+				boolean startDateInUserDailyMap = isDateInUserDailyPortfolio(startMonth, startDay);
 				
-				//Is the start date in the CSV 
+				//1.2 Is this start date the user picked in the CSV?
 				boolean startDateInCSV = isDateInCSV(startMonth, startDay);
 				
 				System.out.println("---------");
@@ -220,47 +218,61 @@ public class App {
 				System.out.println("Our result for startDateInCSv: " + startDateInCSV);
 				System.out.println("---------");
 				
+				// TODO: FIX: this code will be reached when user enter '3' instead of '03' - even tho it's a valid date
 				while(!(startDateInCSV && startDateBeforeCurr && startDateInUserDailyMap )) {
 				
-					System.out.println("It's not a valid start month and / or start day");
+					System.out.println("It's not a valid START MONTH and / or START DAY");
 					
-					System.out.println("Enter a new start month for calculations (Ex: 04): ");
+					System.out.println("Enter a new START MONTH for calculations (Ex: 04): ");
 					startMonth = sc.next();
-					System.out.println("Enter a new start day for calculations (Ex: 12): ");
+					System.out.println("Enter a new START DAY for calculations (Ex: 07): ");
 					startDay = sc.next();
 					
 					startDateBeforeCurr = isStartDateBeforeCurrent(startMonth, startDay, currentMonth, currentDay);
-					startDateInUserDailyMap = isStartDateInUserDailyPortfolio(startMonth, startDay);
+					startDateInUserDailyMap = isDateInUserDailyPortfolio(startMonth, startDay);
 					startDateInCSV = isDateInCSV(startMonth, startDay);
 				}
 				
+				System.out.println("==========================================");
 				
-				//1.1 end dates below
+				//2. The END DATE the user wants to check run calculations on 
 				System.out.println("Enter end month for calculations (Ex: 05): ");
 				String endMonth = sc.next();
 				System.out.println("Enter end day for calculations (Ex: 22): ");
 				String endDay = sc.next();
 				
+				//2.1 Is the user submitted END DATE *AFTER* user submitted START DATE
+				boolean endDateAfterStart = isEndDateAfterStartDate(endMonth, endDay, startMonth, startDay);
+								
+				//2.2  Is there a KEY that matches our END DATE in userDailyPortfolioValues?
+				boolean endDateInUserDailyMap = isDateInUserDailyPortfolio(endMonth, endDay);
 				
-				//Is user input for endMonth + endDay AFTER startMonth + startDay
-//				boolean isEndDatePossible = isDatePossible("end", endMonth, endDay);
+				//2.3 Is this END DATE the user picked in the CSV?
+				boolean endDateInCSV = isDateInCSV(endMonth, endDay);
 				
-//				System.out.println("isEndDatePossible: " + isEndDatePossible);
+				System.out.println("---------");
+				System.out.println("Our result for endDateAfterStart is: " + endDateAfterStart);
+				System.out.println("Our result for endDateInUserDailyMap: " + endDateInUserDailyMap);
+				System.out.println("Our result for endDateInCSV: " + endDateInCSV);
+				System.out.println("---------");
 				
-				//1.2 we also have to take into account that the user may input a date in the FUTURE
-				// that would automatically mean it would not have any numbers. The opposite is possible tho. 
-				// The user can be in the middle of May and access all the way back to the first input
+				while(!(endDateAfterStart && endDateInUserDailyMap && endDateInCSV)) {
+					System.out.println("It's not a valid END MONTH and / or END DAY");
+					
+					System.out.println("Enter a new END MONTH for calculations (Ex: 04): ");
+					endMonth = sc.next();
+					System.out.println("Enter a new END DAY for calculations (Ex: 07): ");
+					endDay = sc.next();
+					
+					endDateAfterStart = isEndDateAfterStartDate(endMonth, endDay, startMonth, startDay);
+					endDateInUserDailyMap = isDateInUserDailyPortfolio(endMonth, endDay);
+					endDateInCSV = isDateInCSV(endMonth, endDay);
+				}
 				
 				
+				//3. then given those days we calculate the percent change in PORTFOLIO VALUE
 				
-				//1.3 we need to make sure the dates are valid in our CSV
-				boolean startDateResult = isDateInCSV(startMonth, startDay);
-				boolean endDateResult = isDateInCSV(endMonth, endDay);
-				System.out.println("Our startDateResult is: " + startDateResult);
-				System.out.println("Our endDateResult is: " + endDateResult);
-				//2. then given those days we calculate the percent change in PORTFOLIO VALUE
-				
-				//3. in order to calculate across multiple days we need to keep track of the portfolio value for each day
+				//4. in order to calculate across multiple days we need to keep track of the portfolio value for each day
 				//	Perhaps as a HashMap. Key = date, value = daily portofolio value 
 			
 				break;
@@ -279,7 +291,33 @@ public class App {
 			System.out.println("Userholdings: " + userHoldings);
 	}
 
-	private static boolean isStartDateInUserDailyPortfolio(String startMonth, String startDay) {
+	private static boolean isEndDateAfterStartDate(String endMonth, String endDay, String startMonth,
+			String startDay) {
+		boolean result = false;
+		
+		int endMonthToInt = Integer.parseInt(endMonth);
+		int startMonthToInt = Integer.parseInt(startMonth);
+		
+		int endDayToInt = Integer.parseInt(endDay);
+		int startDayToInt = Integer.parseInt(startDay);
+		
+		if(endMonthToInt > startMonthToInt) {
+			System.out.println("End month is after Start month");
+			result = true;
+		}
+		
+		if(endMonthToInt == startMonthToInt) {
+			System.out.println("Same month. Checking days now: ");
+			if(endDayToInt > startDayToInt) {
+				result = true;
+			}
+		}
+		
+		
+		return result;
+	}
+
+	private static boolean isDateInUserDailyPortfolio(String startMonth, String startDay) {
 		boolean result = false;
 		String dateString = startMonth + startDay;
 		
@@ -303,12 +341,14 @@ public class App {
 		int startDayToInt = Integer.parseInt(startDay);
 		int currentDayToInt = Integer.parseInt(currentDay);
 		
+		// If start month is less than current month set to TRUE
 		if(startMonthToInt < currentMonthToInt) {
 			System.out.println("Start month is less than current month!");
 			result = true;
 			
 		}
 		
+		//If start month is the same as current month we need to check the DAYS
 		if(startMonthToInt == currentMonthToInt) {
 			System.out.println("Start month equals current month");
 			if(startDayToInt < currentDayToInt) {
@@ -343,7 +383,7 @@ public class App {
 		
 		//1. put month and day together as one string
 		String userMonthDayString = month + day;
-		System.out.println("Our monthDayString is: " + userMonthDayString);
+//		System.out.println("Our monthDayString is: " + userMonthDayString);
 		//2. loop thru the csv file - since it is ordered we might want to do a binary search to make it faster + efficient with a bigger csv file
 		String csvFile = "InterviewCodingPrices.csv";
 		String line = "";
@@ -351,14 +391,14 @@ public class App {
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
 
-			System.out.println("Inside try!");
+//			System.out.println("Inside try!");
 			while ((line = br.readLine()) != null) {
 				String[] holding = line.split(splitBy);
 //				System.out.println("Holding Date: " + holding[0]);
 				String currentDate = holding[0];
 				String currentMonthDateStr = currentDate.substring(4);
-				System.out.println("currentMonthDateStr is: " + currentMonthDateStr);
-				System.out.println("userMonthDayString is: " + userMonthDayString);
+//				System.out.println("currentMonthDateStr is: " + currentMonthDateStr);
+//				System.out.println("userMonthDayString is: " + userMonthDayString);
 				if(currentMonthDateStr.equalsIgnoreCase(userMonthDayString)) {
 					System.out.println("we found one!");
 					result = true;
