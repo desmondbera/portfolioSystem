@@ -58,6 +58,7 @@ public class App {
 					System.out.println("How much cash did you want to deposit into your portfolio? ");
 					cash = sc.nextFloat();
 					System.out.printf("You've deposited %f\n", cash);
+					initialDepositFlag = true;
 				}
 				
 	
@@ -165,9 +166,19 @@ public class App {
 	
 				// 6. Show userHoldings after transaction
 				if (validHoldingsUpdate) {
+					updateUserDailyPortfolioValues(currentMonth, currentDay);
 					showUserHoldings(currentMonth, currentDay);
 					showUserCash();
+					
 				}
+				// CHECKING to see if our userDailyPortfolioValues was updated!
+				System.out.println("###########################");
+				
+				System.out.println("Our userDailyPortfolioValues is: " + userDailyPortfolioValues);
+				
+				System.out.println("###########################");
+
+				
 				// 7. Give user option to go to the next day (MAY MOVE THIS UP EARLIER)
 				System.out.println("Enter 'Y' if you want to go to the next day: ");
 				String userMoveForward = sc.next();
@@ -271,9 +282,9 @@ public class App {
 				
 				
 				//3. then given those days we calculate the percent change in PORTFOLIO VALUE
-				
 				//4. in order to calculate across multiple days we need to keep track of the portfolio value for each day
 				//	Perhaps as a HashMap. Key = date, value = daily portofolio value 
+				
 			
 				break;
 			case ("4"):
@@ -289,6 +300,17 @@ public class App {
 		
 			System.out.println("Outside of the BIG SWITCH CASE");
 			System.out.println("Userholdings: " + userHoldings);
+	}
+
+	private static void updateUserDailyPortfolioValues(String currentMonth, String currentDay) {
+		String dateString = currentMonth + currentDay;
+		
+		//1. get value from USERHOLDING using date
+		String currPortfolioValue = getUserPortfolioValue(currentMonth, currentDay);
+		
+		//2. put this value into the USERDAILYPORTFOLIOVALUES 
+		userDailyPortfolioValues.put(dateString, Float.parseFloat(currPortfolioValue));
+		
 	}
 
 	private static boolean isEndDateAfterStartDate(String endMonth, String endDay, String startMonth,
@@ -359,23 +381,6 @@ public class App {
 		
 		
 		return result;
-	}
-
-	private static boolean isStartDatePossible(String string, String startMonth, String startDay) {
-		boolean result = false;
-		
-		if(string.contentEquals("start")) {
-			System.out.println("Checking if we have touched the start");
-			
-			
-		}
-		
-		if(string.contentEquals("end")) {
-			System.out.println("Checkinf if we have touched the end");
-		}
-		
-		return result;
-		
 	}
 
 	private static boolean isDateInCSV(String month, String day) {
