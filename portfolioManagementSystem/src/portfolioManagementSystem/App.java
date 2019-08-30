@@ -10,8 +10,9 @@ import java.util.Scanner;
 public class App {
 
 	private static float cash = 0;
-	// TODO: convert from INTEGER to float
+	//Example: {"aapl"=2} - meaning user has 2 shares of "appl" stocks
 	private static HashMap<String, Integer> userHoldings = new HashMap<String, Integer>();
+	//Example: {"0430"=155.00} - meaning on day "0430" user had a portfolio value of $155
 	private static HashMap<String, Float> userDailyPortfolioValues = new HashMap<String, Float>();
 	private static int dayCounter = 1;
 
@@ -113,52 +114,80 @@ public class App {
 
 					boolean exitOption = false;
 					while (!validHoldingsUpdate && !exitOption) {
-						System.out.println("**You don't have a enough cash!**");
+						System.out.println("**You don't have a enough to " + userAction + "!**");
 						System.out.println("Enter 1 to try another stock: ");
 						System.out.println("Enter 2 to sell your stocks: ");
 						System.out.println("Enter 3 to close shop for the day: ");
-
 						String userDeniedTransaction = sc.next();
 						switch (userDeniedTransaction) {
-
-						case ("1"):
-							System.out.println("Try another stock: ");
-
-							for (StockNames s : StockNames.values()) {
-								System.out.println(s);
-							}
-
-							userPickedStock = sc.next();
-
-							// Validation to check stock name exists in our system
-							Boolean doesStockExist2 = checkIfStockExists(userPickedStock);
-							while (!doesStockExist2) {
-								System.out.println("That stock does not exist. Try another stock name: ");
+							case ("1"):
+								userAction = "buy";
+								System.out.println("Enter a stock name again: ");
+	
 								for (StockNames s : StockNames.values()) {
-									System.out.println(s);
+									System.out.println("-" + s);
 								}
+	
 								userPickedStock = sc.next();
-								doesStockExist2 = checkIfStockExists(userPickedStock);
-							}
-							stockPrice = currStockPickedPrice(userPickedStock, currentMonth, currentDay);
-							System.out.println("How many shares of " + userPickedStock + " did you want to buy?");
-							stockCount = sc.nextInt();
-
-							validHoldingsUpdate = updateHoldings(userPickedStock, stockPrice, stockCount, userAction);
-
-							break;
-						case ("2"):
-							// TODO:
-							System.out.println("Selling...");
-
-							break;
-						case ("3"):
-							System.out.println("Bye bye!");
-							exitOption = true;
-							break;
-						default:
-							System.out.println("That's not a valid option.");
-							break;
+	
+								// Validation to check stock name exists in our system
+								Boolean doesStockExist2 = checkIfStockExists(userPickedStock);
+								while (!doesStockExist2) {
+									System.out.println("That stock does not exist. Try another stock name: ");
+									for (StockNames s : StockNames.values()) {
+										System.out.println(s);
+									}
+									userPickedStock = sc.next();
+									doesStockExist2 = checkIfStockExists(userPickedStock);
+								}
+								stockPrice = currStockPickedPrice(userPickedStock, currentMonth, currentDay);
+								System.out.println("How many shares of " + userPickedStock + " did you want to buy?");
+								stockCount = sc.nextInt();
+	
+								validHoldingsUpdate = updateHoldings(userPickedStock, stockPrice, stockCount, userAction);
+	
+								break;
+							case ("2"):
+								// TODO:
+								System.out.println("Selling...");
+								userAction = "sell";
+								
+								System.out.println("Available for sale from your portfolio: ");
+								showUserHoldings(currentMonth, currentDay);
+								
+								//1. if userHolding is not empty then we can ask the user which stocks they want to sell
+								if(!userHoldings.isEmpty()) {
+									
+									//1.2 We need to loop thru until the correct stock name is picked:
+									System.out.println("Enter one of the stocks in your portfolio to sell: ");
+									String userPickedStockToSell = sc.next();
+									boolean doesStockExistInHoldings = checkIfStockExistsInHoldings(userPickedStockToSell);
+									System.out.println("doesStockExistInHoldings is: " + doesStockExistInHoldings);
+									//TODO: make validation loop to keep asking if the answer is wrong
+									
+									//1.3 We need to loop thru until the correct amount is picked (<= to current amount)
+									System.out.println("Enter the amount you want to sell: ");
+									int userStockCountToSell = sc.nextInt();
+									boolean doesStockCountExistInHoldings = checkIfStockCountExistsInHoldings(userStockCountToSell);
+									System.out.println("doesStockCountExistInHoldings is: " + doesStockCountExistInHoldings);
+									//TODO: make validation loop to keep asking if the answer is wrong
+									
+									//1.4 Once a valid stock name AND amount has been chosen then we can update our userHoldings
+								
+									stockPrice = currStockPickedPrice(userPickedStockToSell, currentMonth, currentDay);
+									validHoldingsUpdate = updateHoldings(userPickedStockToSell, stockPrice, userStockCountToSell, userAction);
+									System.out.println("Our validHoldingsUpdate is: " + validHoldingsUpdate);
+								
+								}
+								
+								break;
+							case ("3"):
+								System.out.println("Bye bye!");
+								exitOption = true;
+								break;
+							default:
+								System.out.println("That's not a valid option.");
+								break;
 
 						}
 
@@ -314,9 +343,34 @@ public class App {
 			}
 
 		}
+		sc.close();
 
 //			System.out.println("Outside of the BIG SWITCH CASE");
 //			System.out.println("Userholdings: " + userHoldings);
+	}
+
+	private static boolean checkIfStockCountExistsInHoldings(int userStockCountToSell) {
+		boolean result = false;
+		
+		for(Map.Entry<String, Integer> entry : userHoldings.entrySet()) {
+			if(userStockCountToSell <= entry.getValue()) {
+				result = true;
+			}
+		}
+		
+		return result;
+	}
+
+	private static boolean checkIfStockExistsInHoldings(String userStockToSell) {
+		boolean result = false;
+		
+		for(Map.Entry<String, Integer> entry: userHoldings.entrySet()) {
+			if(entry.getKey().equalsIgnoreCase(userStockToSell)) {
+				result = true;
+			}
+		}
+		
+		return result;
 	}
 
 	private static String getPortfolioReturnsOverPeriod(String startMonth, String startDay, String endMonth,
@@ -561,8 +615,7 @@ public class App {
 //		System.out.println("Our cash is: " + cash);
 		float sumOfAllHoldingValues = 0;
 		for (Map.Entry<String, Integer> entry : userHoldings.entrySet()) {
-			sumOfAllHoldingValues += Float
-					.parseFloat(getHoldingValueOfStock(entry.getKey(), entry.getValue(), currentMonth, currentDay));
+			sumOfAllHoldingValues += Float.parseFloat(getHoldingValueOfStock(entry.getKey(), entry.getValue(), currentMonth, currentDay));
 		}
 
 		return Float.toString(sumOfAllHoldingValues);
